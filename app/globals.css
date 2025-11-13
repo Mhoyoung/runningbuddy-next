@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* 👉 너가 직접 만든 기능은 여기 아래에 */
+@keyframes slide-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slide-left 0.3s ease-out forwards;
+}
