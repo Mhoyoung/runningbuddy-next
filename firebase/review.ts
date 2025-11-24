@@ -1,50 +1,40 @@
-import { db, storage } from "./config";
+import { db } from "./config";
 import {
   collection,
   addDoc,
-  Timestamp,
   getDocs,
-  doc,
-  getDoc,
+  query,
+  orderBy,
+  serverTimestamp,
 } from "firebase/firestore";
 
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-// ✅ 이미지 업로드
-export async function uploadReviewImage(file: File) {
-  const fileRef = ref(storage, `reviews/${Date.now()}-${file.name}`);
-
-  await uploadBytes(fileRef, file);
-
-  const url = await getDownloadURL(fileRef);
-  return url;
-}
-
-// ✅ 리뷰 저장
-export async function addReview(data: {
-  uid: string;
+// ✅ 리뷰 작성
+export async function addReview(review: {
+  img: string;
   text: string;
-  img: string | null;
+  userId: string;
 }) {
-  return await addDoc(collection(db, "reviews"), {
-    ...data,
-    createdAt: Timestamp.now(),
+  await addDoc(collection(db, "reviews"), {
+    img: review.img,
+    text: review.text,
+    userId: review.userId,
+    createdAt: serverTimestamp(),
   });
 }
 
-// ✅ 리뷰 목록 가져오기
+// ✅ 리뷰 목록 가져오기 (최신순)
 export async function getReviewList() {
-  const snapshot = await getDocs(collection(db, "reviews"));
-  return snapshot.docs
-    .map((doc) => ({ id: doc.id, ...doc.data() }))
-    .sort((a: any, b: any) => b.createdAt.seconds - a.createdAt.seconds);
-}
+  const q = query(
+    collection(db, "reviews"),
+    orderBy("createdAt", "desc")
+  );
 
-// ✅ 리뷰 상세
-export async function getReviewDetail(id: string) {
-  const ref = doc(db, "reviews", id);
-  const snap = await getDoc(ref);
+  const querySnapshot = await getDocs(q);
+  const list: any[] = [];
 
-  if (snap.exists()) return { id: snap.id, ...snap.data() };
-  return null;
+  querySnapshot.forEach((doc) => {
+    list.push({ id: doc.id, ...doc.data() });
+  });
+
+  return list;
 }
