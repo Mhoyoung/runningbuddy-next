@@ -1,49 +1,86 @@
 "use client";
 
 import { useState } from "react";
+import { storage, db } from "@/firebase/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { auth } from "@/firebase/auth";
+import { useRouter } from "next/navigation";
 
-export default function ReviewNewPage() {
-  const [imgFile, setImgFile] = useState<File | null>(null);
+export default function NewReviewPage() {
+  const router = useRouter();
+  const [image, setImage] = useState<File | null>(null);
   const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const onFileChange = (e: any) => {
-    const file = e.target.files[0];
-    if (file) setImgFile(file);
-  };
+  async function handleSubmit() {
+    if (!auth.currentUser) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    if (!image || !text) {
+      alert("사진과 내용을 입력해주세요.");
+      return;
+    }
+
+    setLoading(true);
+
+    // 1️⃣ Storage Upload
+    const storageRef = ref(storage, `reviews/${Date.now()}-${image.name}`);
+    await uploadBytes(storageRef, image);
+
+    const imageUrl = await getDownloadURL(storageRef);
+
+    // 2️⃣ Firestore Save
+    await addDoc(collection(db, "reviews"), {
+      image: imageUrl,
+      text,
+      likes: 0,
+      likedBy: [],
+      userId: auth.currentUser.uid,
+      createdAt: serverTimestamp(),
+    });
+
+    setLoading(false);
+    router.push("/review");
+  }
 
   return (
-    <section className="p-4 space-y-4">
-      <h2 className="text-xl font-bold">리뷰 작성</h2>
+    <div className="p-5 space-y-6 max-w-lg mx-auto">
+      <h2 className="text-xl font-semibold">리뷰 작성</h2>
 
-      {/* 이미지 미리보기 */}
-      {imgFile && (
+      {/* Image Upload */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+        className="w-full border p-2 rounded-md"
+      />
+
+      {/* Preview */}
+      {image && (
         <img
-          src={URL.createObjectURL(imgFile)}
-          className="w-full rounded-xl"
-          alt="preview"
+          src={URL.createObjectURL(image)}
+          className="w-full h-[250px] object-cover rounded-xl"
         />
       )}
 
-      {/* 이미지 업로드 */}
-      <label className="block">
-        <span className="text-gray-700 font-medium">사진 업로드</span>
-        <input type="file" accept="image/*" onChange={onFileChange} className="mt-2" />
-      </label>
-
-      {/* 글 작성 */}
+      {/* Text Input */}
       <textarea
+        placeholder="내용을 입력하세요..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="러닝 리뷰를 입력하세요!"
-        className="w-full h-32 border rounded-lg p-3"
+        className="w-full border rounded-md p-3 h-[120px]"
       />
 
-      {/* 저장 버튼 */}
       <button
-        className="w-full py-3 bg-black text-white rounded-xl text-lg font-bold active:scale-95 transition"
+        onClick={handleSubmit}
+        disabled={loading}
+        className="w-full bg-black text-white py-3 rounded-md text-lg disabled:opacity-50"
       >
-        저장하기
+        {loading ? "업로드 중..." : "등록하기"}
       </button>
-    </section>
+    </div>
   );
 }
