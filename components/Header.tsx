@@ -41,7 +41,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="w-full h-14 px-4 flex items-center justify-between bg-white shadow-sm fixed top-0 left-0 z-50">
+      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] h-14 px-4 flex items-center justify-between bg-white shadow-sm z-50">
         
         {/* 로고 */}
         <Link href="/" className="text-xl font-extrabold tracking-tight">
