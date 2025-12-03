@@ -1,14 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { FaPlus } from "react-icons/fa";
 
-export default function FloatingButton() {
+export default function FloatingButton({ href = "/" }: { href?: string }) {
   return (
     <Link
-      href="/review/new"
-      className="fixed bottom-20 right-6 bg-black text-white rounded-full w-14 h-14 flex justify-center items-center text-3xl shadow-lg hover:scale-105 transition"
+      href={href}
+      className="
+        fixed bottom-6 right-6 
+        bg-black text-white 
+        w-14 h-14 
+        rounded-full 
+        flex items-center justify-center
+        shadow-lg 
+        active:scale-95 
+        transition
+        z-50
+      "
     >
-      +
+      <FaPlus size={20} />
     </Link>
   );
 }

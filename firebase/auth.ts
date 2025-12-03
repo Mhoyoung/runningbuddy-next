@@ -1,24 +1,23 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import  app  from "./config";
-
-// 🔥 Firebase Auth 객체 생성
-export const auth = getAuth(app);
-
-// -----------------------------------------
-// 🚀 인증 기능 함수들
-// -----------------------------------------
+// firebase/auth.ts
+import { auth } from "./config"; // ✅ config에서 미리 만들어둔 auth 가져오기
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 
 // 회원가입
-export async function signUp(email: string, password: string) {
-  return await createUserWithEmailAndPassword(auth, email, password);
+export function signUp(email: string, password: string) {
+  // await는 호출하는 쪽에서 처리하도록 Promise 자체를 반환
+  return createUserWithEmailAndPassword(auth, email, password);
 }
 
 // 로그인
-export async function logIn(email: string, password: string) {
-  return await signInWithEmailAndPassword(auth, email, password);
+export function logIn(email: string, password: string) {
+  return signInWithEmailAndPassword(auth, email, password);
 }
 
 // 로그아웃
-export async function logOut() {
-  return await signOut(auth);
+export function logOut() {
+  return signOut(auth);
 }

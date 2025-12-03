@@ -1,19 +1,19 @@
-// firebase/config.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBoNVDbriqN3OCGjzBj8RHm_0IvOjQAAnM",
-  authDomain: "runningbuddy-1d41e.firebaseapp.com",
-  projectId: "runningbuddy-1d41e",
-  storageBucket: "runningbuddy-1d41e.firebasestorage.app",
-  messagingSenderId: "289461051591",
-  appId: "1:289461051591:web:9d6cdd400e82d37e8f9ee2",
+  // 따옴표 안에 있던 긴 영어 값들을 다 지우고, 아래처럼 교체하세요.
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// ✅ Next.js는 핫리로드가 많아서 App이 중복 초기화되지 않게 처리
+// 중복 초기화 방지
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);

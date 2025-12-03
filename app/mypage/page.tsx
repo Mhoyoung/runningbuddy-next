@@ -3,91 +3,117 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  doc, 
+  getDoc 
+} from "firebase/firestore";
+import ReviewCard from "@/components/ReviewCard";
+import Link from "next/link";
+import Skeleton from "@/components/Skeleton";
 
 export default function MyPage() {
   const [user, setUser] = useState<any>(null);
   const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [createdAt, setCreatedAt] = useState("");
-
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [myReviews, setMyReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ 로그인 감지
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
-        // 로그인 안 되어 있으면 로그인 페이지로 이동
-        window.location.href = "/login";
+        setLoading(false);
         return;
       }
 
       setUser(currentUser);
 
-      // ✅ Firestore에서 프로필 정보 불러오기
-      const ref = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(ref);
+      // Firestore에서 사용자 정보 가져오기
+      const userDocRef = doc(db, "users", currentUser.uid);
+      const userSnap = await getDoc(userDocRef);
 
-      if (snap.exists()) {
-        const data = snap.data();
-        setNickname(data.nickname);
-        setEmail(data.email);
-        setCreatedAt(
-          data.createdAt?.toDate
-            ? data.createdAt.toDate().toLocaleDateString()
-            : ""
-        );
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        setNickname(data.nickname || "사용자");
+        setProfileImage(data.profileImage || null);
       }
+
+      // 🔥 내가 쓴 리뷰 가져오기
+      const reviewsRef = collection(db, "reviews");
+      const q = query(reviewsRef, where("userId", "==", currentUser.uid));
+      const reviewSnap = await getDocs(q);
+
+      setMyReviews(
+        reviewSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
 
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-gray-500">불러오는 중...</p>
+      <div className="p-6">
+        <Skeleton className="w-20 h-20 rounded-full" />
+        <Skeleton className="w-40 h-4 mt-4" />
+        <p className="mt-6 text-gray-400">잠시만요...</p>
       </div>
     );
 
+  if (!user)
+    return (
+      <p className="p-6 text-center text-gray-600">
+        로그인이 필요합니다.
+      </p>
+    );
+
   return (
-    <section className="p-6 mt-12">
-      <h1 className="text-3xl font-bold mb-6">마이페이지</h1>
+    <div className="p-6 space-y-6 max-w-lg mx-auto">
+      <h2 className="text-xl font-semibold">마이페이지</h2>
 
-      <div className="bg-white shadow p-6 rounded-xl space-y-4">
-
-        {/* 프로필 사진 자리 */}
-        <div className="flex justify-center mb-4">
-          <div className="w-24 h-24 rounded-full bg-gray-200" />
-        </div>
-
-        {/* 닉네임 */}
+      <div className="flex items-center gap-4">
+        <img
+          src={profileImage ?? "/placeholder.png"}
+          className="w-20 h-20 rounded-full object-cover border"
+        />
         <div>
-          <p className="text-sm text-gray-500">닉네임</p>
-          <p className="text-lg font-semibold">{nickname}</p>
+          <p className="font-semibold text-lg">{nickname}</p>
+          <Link href="/mypage/profile" className="text-sm text-blue-500 underline">
+            프로필 수정 →
+          </Link>
         </div>
-
-        {/* 이메일 */}
-        <div>
-          <p className="text-sm text-gray-500">이메일</p>
-          <p className="text-lg font-semibold">{email}</p>
-        </div>
-
-        {/* 가입 날짜 */}
-        <div>
-          <p className="text-sm text-gray-500">가입 날짜</p>
-          <p className="text-lg font-semibold">{createdAt}</p>
-        </div>
-
-       <button
-         className="w-full py-3 bg-primary text-white rounded-lg font-semibold active:scale-95"
-         onClick={() => (window.location.href = "/mypage/edit")}
-        >
-         프로필 수정
-        </button>
       </div>
-    </section>
+
+      <hr className="border-gray-200" />
+
+      <div>
+        <h3 className="text-lg font-semibold">📌 내가 쓴 리뷰</h3>
+        {myReviews.length === 0 ? (
+          <p className="text-gray-500 text-sm mt-2">아직 작성한 리뷰가 없습니다 😶</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {myReviews.map((review) => (
+              <ReviewCard
+                key={review.id}
+                id={review.id}
+                likes={review.likes}
+                text={review.text}
+                image={review.image}
+                likedBy={review.likedBy || []}
+                userId={review.userId}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { storage, db } from "@/firebase/config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { auth } from "@/firebase/auth";
+import { auth } from "@/firebase/config";
 import { useRouter } from "next/navigation";
 
 export default function NewReviewPage() {
