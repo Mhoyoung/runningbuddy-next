@@ -1,5 +1,13 @@
 import { db } from "./config";
-import { collection, addDoc, Timestamp, getDocs } from "firebase/firestore";
+import { 
+  collection, 
+  addDoc, 
+  Timestamp, 
+  getDocs, 
+  query,     
+  where,     
+  orderBy    
+} from "firebase/firestore";
 
 // ✅ 기록 저장
 export async function addRecord(data: {
@@ -15,13 +23,18 @@ export async function addRecord(data: {
   });
 }
 
-// ✅ 기록 전체 불러오기 (특정 유저)
+// ✅ 기록 불러오기 
 export async function getRecords(uid: string) {
-  const snapshot = await getDocs(collection(db, "records"));
-  const records = snapshot.docs
-    .map((doc) => ({ id: doc.id, ...doc.data() }))
-    .filter((x: any) => x.uid === uid)
-    .sort((a: any, b: any) => b.createdAt.seconds - a.createdAt.seconds);
+  const q = query(
+    collection(db, "records"),
+    where("uid", "==", uid),
+    orderBy("createdAt", "desc")
+  );
 
-  return records;
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 }

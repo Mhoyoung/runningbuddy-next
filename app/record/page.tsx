@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import FloatingButton from "../../components/FloatingButton";
 import Link from "next/link";
-import { getRecords } from "../../firebase/record";
-import { auth } from "../../firebase/config";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
+import { getRecords } from "@/firebase/record"; // 경로 확인 (@/firebase/record)
+import { auth } from "@/firebase/config"; // 경로 확인 (@/firebase/config)
+import FloatingButton from "@/components/FloatingButton"; // 경로 확인
+import Skeleton from "@/components/Skeleton"; // 스켈레톤 있다면 사용
+import { FaRunning, FaStopwatch, FaRoad } from "react-icons/fa"; // 아이콘 추가
 
 export default function RecordPage() {
   const [tab, setTab] = useState<"my" | "race">("my");
@@ -22,93 +24,121 @@ export default function RecordPage() {
         setLoading(false);
         return;
       }
-
       setUser(currentUser);
-
-      const data = await getRecords(currentUser.uid);
-      setRecords(data);
-      setLoading(false);
+      try {
+        const data = await getRecords(currentUser.uid);
+        setRecords(data);
+      } catch (error) {
+        console.error("기록 불러오기 실패:", error);
+      } finally {
+        setLoading(false);
+      }
     });
-
     return () => unsub();
   }, []);
 
   if (loading) {
-    return (
-      <section className="p-4 text-center">
-        <p>불러오는 중...</p>
-      </section>
-    );
+    return <div className="p-6 space-y-4"><Skeleton className="h-24 w-full rounded-xl" /><Skeleton className="h-24 w-full rounded-xl" /></div>;
   }
 
   if (!user) {
     return (
-      <section className="p-4 text-center">
-        <p className="text-gray-600">로그인이 필요합니다.</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-4 text-center">
+        <p className="text-gray-500 mb-4">로그인이 필요한 서비스입니다 🏃‍♂️</p>
         <button
-          className="mt-4 bg-black text-white px-4 py-2 rounded-md"
+          className="bg-black text-white px-6 py-3 rounded-xl font-bold active:scale-95 transition"
           onClick={() => router.push("/login")}
         >
-          로그인하기 →
+          로그인하러 가기
         </button>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="p-4">
-      {/* 탭 */}
-      <div className="flex mb-4 border-b">
+    <section className="p-4 pb-24 min-h-screen bg-gray-50">
+      <h1 className="text-2xl font-bold mb-6 px-1">나의 러닝 기록 ⏱️</h1>
+
+      {/* 탭 메뉴 */}
+      <div className="flex bg-white p-1 rounded-xl shadow-sm mb-6">
         <button
-          className={`flex-1 py-2 text-center ${
-            tab === "my" ? "font-bold border-b-2 border-primary" : "text-gray-500"
+          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition ${
+            tab === "my" ? "bg-black text-white shadow-md" : "text-gray-400 hover:bg-gray-50"
           }`}
           onClick={() => setTab("my")}
         >
           내 기록
         </button>
-
         <button
-          className={`flex-1 py-2 text-center ${
-            tab === "race" ? "font-bold border-b-2 border-primary" : "text-gray-500"
+          className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition ${
+            tab === "race" ? "bg-black text-white shadow-md" : "text-gray-400 hover:bg-gray-50"
           }`}
           onClick={() => setTab("race")}
         >
-          대회 기록 조회
+          대회 조회
         </button>
       </div>
 
-      {/* 내 기록 */}
+      {/* 내 기록 리스트 */}
       {tab === "my" && (
-        <div className="space-y-3">
-          {records.map((rec) => (
-            <div key={rec.id} className="p-4 bg-gray-100 rounded-lg shadow flex justify-between">
-              <div>
-                <p className="font-semibold">{rec.date}</p>
-                <p className="text-gray-500">
-                  {rec.distance} • {rec.time}
-                </p>
-              </div>
-              <p className="text-gray-700">{rec.pace}</p>
+        <div className="space-y-4">
+          {records.length === 0 ? (
+            <div className="text-center py-10 text-gray-400 bg-white rounded-2xl shadow-sm border border-dashed border-gray-200">
+              <p>아직 저장된 기록이 없어요.</p>
+              <p className="text-xs mt-1">오늘의 러닝을 기록해보세요!</p>
             </div>
-          ))}
+          ) : (
+            records.map((rec) => (
+              <div
+                key={rec.id}
+                className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3 relative overflow-hidden"
+              >
+                {/* 왼쪽 색상 바 포인트 */}
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500" />
+                
+                {/* 상단 날짜 */}
+                <div className="flex justify-between items-center pb-2 border-b border-gray-50 pl-2">
+                   <span className="text-gray-500 text-sm font-medium">{rec.date}</span>
+                   <span className="bg-blue-50 text-blue-600 text-xs font-bold px-2 py-1 rounded-full">Running</span>
+                </div>
 
-          {/* + 버튼 */}
+                {/* 데이터 그리드 */}
+                <div className="grid grid-cols-3 gap-2 pl-2">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-1 flex justify-center items-center gap-1"><FaRoad/> 거리</p>
+                    <p className="font-bold text-lg">{rec.distance} <span className="text-xs font-normal text-gray-500">km</span></p>
+                  </div>
+                  <div className="text-center border-l border-gray-100">
+                    <p className="text-xs text-gray-400 mb-1 flex justify-center items-center gap-1"><FaStopwatch/> 시간</p>
+                    <p className="font-bold text-lg">{rec.time}</p>
+                  </div>
+                  <div className="text-center border-l border-gray-100">
+                    <p className="text-xs text-gray-400 mb-1 flex justify-center items-center gap-1"><FaRunning/> 페이스</p>
+                    <p className="font-bold text-lg text-blue-600">{rec.pace}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
           <FloatingButton href="/record/new" />
         </div>
       )}
 
-      {/* 대회 조회 */}
+      {/* 대회 조회 (외부 링크) */}
       {tab === "race" && (
-        <div className="flex flex-col items-center mt-10 px-6 text-center">
-          <p className="text-gray-700 mb-6">공식 사이트에서 대회 기록을 조회할 수 있어요.</p>
+        <div className="flex flex-col items-center justify-center py-10 text-center bg-white rounded-2xl shadow-sm border border-gray-100 px-6">
+          <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" className="w-20 mb-4 opacity-50" />
+          <h3 className="text-lg font-bold mb-2">공식 기록 조회</h3>
+          <p className="text-gray-500 text-sm mb-6">
+            마라톤 대회 공식 사이트에서<br />나의 기록을 검색할 수 있습니다.
+          </p>
 
           <Link
             href="https://time.spct.kr/main.php"
             target="_blank"
-            className="bg-white text-black !text-black w-full py-4 rounded-lg font-bold shadow-md active:scale-95 transition"
+            className="bg-black text-white w-full py-4 rounded-xl font-bold shadow-lg active:scale-95 transition flex items-center justify-center gap-2"
           >
-            공식 대회 기록 조회하기 →
+            기록 조회하러 가기 🔗
           </Link>
         </div>
       )}

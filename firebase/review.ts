@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   getDoc,
   deleteDoc,
+  limit
 } from "firebase/firestore";
 
 // ---------------------------
@@ -127,4 +128,14 @@ export async function deleteComment(reviewId: string, commentId: string, userId:
   }
 
   await deleteDoc(ref);
+}
+
+export async function getRecentReviews() {
+  const q = query(
+    collection(db, "reviews"),
+    orderBy("createdAt", "desc"),
+    limit(3)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
