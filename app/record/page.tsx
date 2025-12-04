@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { getRecords } from "@/firebase/record"; // 경로 확인 (@/firebase/record)
-import { auth } from "@/firebase/config"; // 경로 확인 (@/firebase/config)
-import FloatingButton from "@/components/FloatingButton"; // 경로 확인
+import { getRecords } from "@/firebase/record";
+import { auth } from "@/firebase/config"; 
+import FloatingButton from "@/components/FloatingButton"; 
 import Skeleton from "@/components/Skeleton"; // 스켈레톤 있다면 사용
 import { FaRunning, FaStopwatch, FaRoad } from "react-icons/fa"; // 아이콘 추가
 
@@ -57,7 +57,7 @@ export default function RecordPage() {
 
   return (
     <section className="p-4 pb-24 min-h-screen bg-gray-50">
-      <h1 className="text-2xl font-bold mb-6 px-1">나의 러닝 기록 ⏱️</h1>
+      <h1 className="text-2xl font-bold mb-6 px-1">나의 러닝 기록 </h1>
 
       {/* 탭 메뉴 */}
       <div className="flex bg-white p-1 rounded-xl shadow-sm mb-6">

@@ -8,7 +8,7 @@ html, body {
   font-family: "Pretendard", sans-serif;
 }
 
-/* 👉 너가 직접 만든 기능은 여기 아래에 */
+/* 기능 */
 @keyframes slide-left {
   from {
     transform: translateX(100%);

@@ -16,10 +16,10 @@ import {
   deleteDoc,
   limit
 } from "firebase/firestore";
+// 이미지 업로드를 위해 Storage 관련 함수 추가
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// ---------------------------
-// 📌 리뷰 타입 정의
-// ---------------------------
+// 리뷰 타입 정의
 export interface Review {
   id: string;
   image: string;
@@ -30,9 +30,7 @@ export interface Review {
   createdAt?: any;
 }
 
-// ---------------------------
-// 📌 리뷰 가져오기
-// ---------------------------
+// 리뷰 가져오기
 export async function getReviews(): Promise<Review[]> {
   const snapshot = await getDocs(collection(db, "reviews"));
   return snapshot.docs.map((doc) => ({
@@ -41,9 +39,7 @@ export async function getReviews(): Promise<Review[]> {
   })) as Review[];
 }
 
-// ---------------------------
-// ❤️ 좋아요 토글
-// ---------------------------
+// 좋아요 토글
 export async function toggleLike(reviewId: string, userId: string, alreadyLiked: boolean) {
   const ref = doc(db, "reviews", reviewId);
 
@@ -60,9 +56,7 @@ export async function toggleLike(reviewId: string, userId: string, alreadyLiked:
   }
 }
 
-// ---------------------------
-// 💬 댓글 기능
-// ---------------------------
+// 댓글 기능
 export async function addComment(reviewId: string, text: string, userId: string) {
   // 유저 정보 가져오기 (nickname 포함)
   const userRef = doc(db, `users/${userId}`);
@@ -93,9 +87,7 @@ export function listenComments(reviewId: string, callback: (comments: any[]) => 
   });
 }
 
-// ---------------------------
-// 🗑 리뷰 삭제 (작성자만)
-// ---------------------------
+// 리뷰 삭제 (작성자만)
 export async function deleteReview(reviewId: string, userId: string) {
   const ref = doc(db, "reviews", reviewId);
   const snap = await getDoc(ref);
@@ -112,9 +104,7 @@ export async function deleteReview(reviewId: string, userId: string) {
   await deleteDoc(ref);
 }
 
-// ---------------------------
 // 🗑 댓글 삭제 (작성자만)
-// ---------------------------
 export async function deleteComment(reviewId: string, commentId: string, userId: string) {
   const ref = doc(db, `reviews/${reviewId}/comments/${commentId}`);
   const snap = await getDoc(ref);
@@ -130,6 +120,7 @@ export async function deleteComment(reviewId: string, commentId: string, userId:
   await deleteDoc(ref);
 }
 
+// 메인 페이지용 (최신 3개)
 export async function getRecentReviews() {
   const q = query(
     collection(db, "reviews"),
@@ -138,4 +129,23 @@ export async function getRecentReviews() {
   );
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+// 리뷰 작성하기 (이미지 업로드 포함)
+export async function addReview(userId: string, text: string, file: File) {
+  // 1. 이미지 스토리지에 업로드
+  const storage = getStorage();
+  const storageRef = ref(storage, `reviews/${Date.now()}_${file.name}`);
+  const uploadResult = await uploadBytes(storageRef, file);
+  const imageUrl = await getDownloadURL(uploadResult.ref);
+
+  // 2. Firestore에 데이터 저장
+  await addDoc(collection(db, "reviews"), {
+    userId,
+    text,
+    image: imageUrl,
+    likes: 0,
+    likedBy: [],
+    createdAt: serverTimestamp(),
+  });
 }

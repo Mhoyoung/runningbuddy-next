@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart, FaTrash } from "react-icons/fa";
 import { auth } from "@/firebase/config";
-import { addComment, listenComments, deleteComment, toggleLike, deleteReview } from "@/firebase/review"; // ✅ deleteReview 추가
+import { addComment, listenComments, deleteComment, toggleLike, deleteReview } from "@/firebase/review";
 
 interface ReviewModalProps {
   open: boolean;
@@ -13,7 +13,7 @@ interface ReviewModalProps {
   likes: number;
   liked: boolean;
   id: string;
-  userId: string; // ✅ 작성자 ID 추가 (필수)
+  userId: string;
   onLikeChange?: (liked: boolean, count: number) => void;
 }
 
@@ -25,7 +25,7 @@ export default function ReviewModal({
   likes,
   liked,
   id,
-  userId, // ✅ 받아오기
+  userId, 
   onLikeChange,
 }: ReviewModalProps) {
   const user = auth.currentUser;
@@ -89,7 +89,7 @@ export default function ReviewModal({
     await deleteComment(id, commentId, auth.currentUser.uid);
   }
 
-  // 🔥 리뷰 삭제 핸들러 (새로 추가됨)
+  // 리뷰 삭제 핸들러 
   async function handleDeleteReview() {
     if (!confirm("정말 이 리뷰를 삭제하시겠습니까? (되돌릴 수 없습니다)")) return;
 
@@ -108,7 +108,7 @@ export default function ReviewModal({
 
   if (!open) return null;
 
-  // ✅ 내가 쓴 리뷰인지 확인
+  // 내가 쓴 리뷰인지 확인
   const isMyReview = user && userId === user.uid;
 
   return (
@@ -120,7 +120,7 @@ export default function ReviewModal({
         className="bg-white rounded-xl overflow-hidden w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 🔥 삭제 버튼 (우측 상단, 내가 쓴 글일 때만) */}
+        {/* 삭제 버튼 (우측 상단, 내가 쓴 글일 때만) */}
         {isMyReview && (
           <button
             onClick={handleDeleteReview}
@@ -154,7 +154,7 @@ export default function ReviewModal({
           {/* 댓글 리스트 */}
           <div className="flex-1 space-y-3 overflow-y-auto min-h-[100px]">
             {comments.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-4">첫 댓글을 남겨보세요 👋</p>
+                <p className="text-gray-400 text-sm text-center py-4">첫 댓글을 남겨보세요 </p>
             ) : (
                 comments.map((c) => (
                 <div key={c.id} className="flex justify-between items-start gap-2 bg-gray-50 p-2 rounded-lg">

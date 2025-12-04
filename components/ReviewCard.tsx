@@ -12,7 +12,7 @@ interface ReviewCardProps {
   text: string;
   likes: number;
   likedBy: string[];
-  userId?: string; // 작성자 ID
+  userId?: string; 
 }
 
 export default function ReviewCard({ id, image, text, likes, likedBy, userId }: ReviewCardProps) {
@@ -46,7 +46,7 @@ export default function ReviewCard({ id, image, text, likes, likedBy, userId }: 
       await deleteReview(id, user.uid); 
       window.location.reload();
     }
-  } // 👈 여기가 빠져 있었습니다!
+  }
 
   return (
     <>
@@ -90,7 +90,7 @@ export default function ReviewCard({ id, image, text, likes, likedBy, userId }: 
         likes={count}
         liked={liked}
         id={id}
-        // 🔥 작성자 ID 전달
+        //  작성자 ID 전달
         userId={userId || ""} 
         onLikeChange={(newLiked, newCount) => {
           setLiked(newLiked);

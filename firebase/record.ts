@@ -9,7 +9,7 @@ import {
   orderBy    
 } from "firebase/firestore";
 
-// ✅ 기록 저장
+// 기록 저장
 export async function addRecord(data: {
   uid: string;
   date: string;
@@ -23,7 +23,7 @@ export async function addRecord(data: {
   });
 }
 
-// ✅ 기록 불러오기 
+// 기록 불러오기 
 export async function getRecords(uid: string) {
   const q = query(
     collection(db, "records"),

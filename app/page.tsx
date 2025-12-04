@@ -3,18 +3,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getRecentRecruits } from "@/firebase/recruit";
-import { getRecentReviews } from "@/firebase/review"; // ✅ 리뷰 함수 가져오기
+import { getRecentReviews } from "@/firebase/review";
 import Skeleton from "@/components/Skeleton";
 
 export default function Home() {
   const [recentRecruits, setRecentRecruits] = useState<any[]>([]);
-  const [recentReviews, setRecentReviews] = useState<any[]>([]); // ✅ 리뷰 상태 추가
+  const [recentReviews, setRecentReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 🔥 모집글과 리뷰 데이터를 동시에 가져오기 (Promise.all)
+        // 모집글과 리뷰 데이터를 동시에 가져오기 
         const [recruitsData, reviewsData] = await Promise.all([
           getRecentRecruits(),
           getRecentReviews(),
@@ -31,24 +31,37 @@ export default function Home() {
     loadData();
   }, []);
 
+  // 메인 화면에 보여줄 소식 데이터 (링크 필드는 제거함 -> 상세 페이지로 이동)
   const recentNews = [
-    { id: 1, title: "서울 마라톤 접수 안내", date: "2025-11-05" },
-    { id: 2, title: "크루 연합 러닝 이벤트", date: "2025-11-03" },
-    { id: 3, title: "초보 러너 팁 공개", date: "2025-11-01" },
+    { 
+      id: "1", // id는 string 타입으로 맞춰주세요
+      title: "🌅 2026 새해일출런 (1/1 개최)", 
+      date: "2025.12.03"
+    },
+    { 
+      id: "2", 
+      title: "🏃‍♂️ 제20회 여수마라톤대회 접수", 
+      date: "2025.12.01"
+    },
+    { 
+      id: "3", 
+      title: "🏅 2026 한강 서울 하프 마라톤", 
+      date: "2025.11.28"
+    },
   ];
 
   return (
     <div className="flex flex-col items-center px-4 py-6 pb-24 bg-gray-50 min-h-screen">
       
-      {/* 배너 */}
+     {/* 배너 */}
       <div className="w-full rounded-xl overflow-hidden shadow-md relative h-48 group cursor-pointer">
         <img
-          src="https://images.unsplash.com/photo-1552674605-469400cc61bc?auto=format&fit=crop&q=80&w=800"
+          src="/runner-banner.jpg" 
           alt="러닝 배너"
           className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <p className="text-white font-bold text-lg drop-shadow-md">오늘도 힘차게 달려볼까요? 🔥</p>
+            <p className="text-white font-bold text-lg drop-shadow-md">오늘도 힘차게 달려볼까요? </p>
         </div>
       </div>
 
@@ -56,14 +69,14 @@ export default function Home() {
       <section className="mt-6 text-center">
         <h2 className="text-2xl font-extrabold tracking-tight">RunningBuddy</h2>
         <p className="text-gray-500 mt-1 text-sm font-medium">
-          함께 달리고, 함께 기록하는 러너들의 공간 🏃‍♂️
+          함께 달리고, 함께 기록하는 러너들의 공간 
         </p>
       </section>
 
-      {/* 🔥 최신 모집 */}
+      {/* 최신 모집 */}
       <section className="w-full mt-8">
         <div className="flex justify-between items-end mb-3 px-1">
-          <h3 className="text-lg font-bold text-gray-800">최신 모집 🔥</h3>
+          <h3 className="text-lg font-bold text-gray-800">최신 모집 </h3>
           <Link href="/recruit" className="text-primary text-sm font-medium hover:underline">
             더보기 →
           </Link>
@@ -103,10 +116,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔥 최신 리뷰 (진짜 데이터 연동됨) */}
+      {/* 최신 리뷰 */}
       <section className="w-full mt-8">
         <div className="flex justify-between items-center mb-3 px-1">
-          <h3 className="text-lg font-bold text-gray-800">최신 리뷰 📸</h3>
+          <h3 className="text-lg font-bold text-gray-800">최신 리뷰</h3>
           <Link href="/review" className="text-primary text-sm font-medium hover:underline">
             더보기 →
           </Link>
@@ -142,10 +155,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 소식 (더미) */}
+      {/* 소식 / 공지 */}
       <section className="w-full mt-8">
         <div className="flex justify-between items-center mb-3 px-1">
-          <h3 className="text-lg font-bold text-gray-800">소식 📢</h3>
+          <h3 className="text-lg font-bold text-gray-800">소식 / 공지 </h3>
           <Link href="/news" className="text-primary text-sm font-medium hover:underline">
             더보기 →
           </Link>
@@ -153,15 +166,16 @@ export default function Home() {
 
         <div className="space-y-3">
           {recentNews.map((n) => (
-            <div
+            <Link
               key={n.id}
-              className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100"
+              href={`/news/${n.id}`}
+              className="block bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 transition"
             >
               <div className="flex justify-between items-start">
-                  <p className="font-semibold text-gray-900 text-sm">{n.title}</p>
-                  <span className="text-xs text-gray-400">{n.date}</span>
+                  <p className="font-semibold text-gray-900 text-sm line-clamp-1">{n.title}</p>
+                  <span className="text-xs text-gray-400 shrink-0 ml-2">{n.date}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

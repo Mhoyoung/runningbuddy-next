@@ -28,7 +28,7 @@ export default function SlideMenu({ open, onClose, user }: SlideMenuProps) {
   if (!visible && !open) return null;
 
   return (
-    // ✅ 1. 여기가 핵심: 화면 정중앙(left-1/2)으로 오게 하고, 폭을 480px로 제한
+    // 1. 화면 정중앙(left-1/2)으로 오게 하고, 폭을 480px로 제한
     <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] h-full z-[60] pointer-events-none">
       
       {/* 2. 배경 (앱 화면만 어둡게) */}

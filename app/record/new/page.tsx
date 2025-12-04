@@ -14,7 +14,7 @@
     const [pace, setPace] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // ✅ 로그인 검사
+    // 로그인 검사
     useEffect(() => {
       if (!auth.currentUser) {
         router.push("/login");

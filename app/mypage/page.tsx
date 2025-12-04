@@ -2,118 +2,139 @@
 
 import { useEffect, useState } from "react";
 import { auth, db } from "@/firebase/config";
-import { onAuthStateChanged } from "firebase/auth";
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  doc, 
-  getDoc 
-} from "firebase/firestore";
-import ReviewCard from "@/components/ReviewCard";
+import { doc, getDoc } from "firebase/firestore";
+import { getMyRecruits, getJoinedRecruits } from "@/firebase/recruit";
 import Link from "next/link";
 import Skeleton from "@/components/Skeleton";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function MyPage() {
-  const [user, setUser] = useState<any>(null);
-  const [nickname, setNickname] = useState("");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [myReviews, setMyReviews] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null); // 초기값 null
+  const [profile, setProfile] = useState<any>(null);
+  const [myRecruits, setMyRecruits] = useState<any[]>([]);
+  const [joinedRecruits, setJoinedRecruits] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true); // 로딩 시작
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+    // onAuthStateChanged는 로그인 상태가 확인되면 실행됨
+    const unsub = auth.onAuthStateChanged(async (currentUser) => {
       if (!currentUser) {
-        setLoading(false);
+        // 로그인이 안 된 상태라면
+        setUser(null);
+        setLoading(false); // 로딩 끝
         return;
       }
 
+      // 로그인이 된 상태라면
       setUser(currentUser);
 
-      // Firestore에서 사용자 정보 가져오기
-      const userDocRef = doc(db, "users", currentUser.uid);
-      const userSnap = await getDoc(userDocRef);
+      try {
+        // 1. 프로필 가져오기
+        const userSnap = await getDoc(doc(db, "users", currentUser.uid));
+        if (userSnap.exists()) setProfile(userSnap.data());
 
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        setNickname(data.nickname || "사용자");
-        setProfileImage(data.profileImage || null);
+        // 2. 활동 내역 가져오기
+        const [myList, joinedList] = await Promise.all([
+          getMyRecruits(currentUser.uid),
+          getJoinedRecruits(currentUser.uid),
+        ]);
+
+        setMyRecruits(myList);
+        setJoinedRecruits(joinedList);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false); // 데이터 다 가져오면 로딩 끝
       }
-
-      // 🔥 내가 쓴 리뷰 가져오기
-      const reviewsRef = collection(db, "reviews");
-      const q = query(reviewsRef, where("userId", "==", currentUser.uid));
-      const reviewSnap = await getDocs(q);
-
-      setMyReviews(
-        reviewSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
-
-      setLoading(false);
     });
 
     return () => unsub();
   }, []);
 
-  if (loading)
+  // (Firebase가 확인하는 동안에는 무조건 로딩 화면을 보여줌)
+  if (loading) {
     return (
       <div className="p-6">
-        <Skeleton className="w-20 h-20 rounded-full" />
-        <Skeleton className="w-40 h-4 mt-4" />
-        <p className="mt-6 text-gray-400">잠시만요...</p>
+        <Skeleton className="h-20 w-20 rounded-full mb-4"/>
+        <Skeleton className="h-40 w-full rounded-xl"/>
       </div>
     );
+  }
 
-  if (!user)
-    return (
-      <p className="p-6 text-center text-gray-600">
-        로그인이 필요합니다.
-      </p>
-    );
+  // 로딩이 끝났는데도 user가 없으면 그때 튕겨냄
+  if (!user) {
+    return <div className="p-6 text-center mt-10">로그인이 필요한 서비스입니다. </div>;
+  }
 
   return (
-    <div className="p-6 space-y-6 max-w-lg mx-auto">
-      <h2 className="text-xl font-semibold">마이페이지</h2>
+    <div className="p-6 pb-24 min-h-screen bg-gray-50">
+      <h1 className="text-2xl font-bold mb-6">마이페이지 </h1>
 
-      <div className="flex items-center gap-4">
-        <img
-          src={profileImage ?? "/placeholder.png"}
-          className="w-20 h-20 rounded-full object-cover border"
-        />
+      {/* 프로필 카드 */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm mb-8 flex items-center gap-5 border border-gray-100">
+        <div className="w-20 h-20 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-gray-100">
+           {profile?.profileImage ? (
+             <img src={profile.profileImage} className="w-full h-full object-cover" alt="프로필" />
+           ) : (
+             <FaUserCircle className="text-gray-300 w-full h-full" />
+           )}
+        </div>
+
         <div>
-          <p className="font-semibold text-lg">{nickname}</p>
-          <Link href="/mypage/profile" className="text-sm text-blue-500 underline">
+          <h2 className="text-xl font-bold">{profile?.nickname || user.displayName || "러너"}</h2>
+          <p className="text-gray-500 text-sm">{user.email}</p>
+          <Link href="/mypage/profile/edit" className="text-blue-500 text-sm font-bold mt-1 inline-block hover:underline">
             프로필 수정 →
           </Link>
         </div>
       </div>
 
-      <hr className="border-gray-200" />
-
-      <div>
-        <h3 className="text-lg font-semibold">📌 내가 쓴 리뷰</h3>
-        {myReviews.length === 0 ? (
-          <p className="text-gray-500 text-sm mt-2">아직 작성한 리뷰가 없습니다 😶</p>
+      {/* 참여 중인 러닝 */}
+      <section className="mb-8">
+        <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+          🏃‍♂️ 참여 중인 러닝 <span className="text-blue-500">{joinedRecruits.length}</span>
+        </h3>
+        {joinedRecruits.length === 0 ? (
+          <div className="text-gray-400 text-sm bg-white p-4 rounded-xl border border-dashed text-center">
+            참여 중인 모임이 없어요.
+          </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            {myReviews.map((review) => (
-              <ReviewCard
-                key={review.id}
-                id={review.id}
-                likes={review.likes}
-                text={review.text}
-                image={review.image}
-                likedBy={review.likedBy || []}
-                userId={review.userId}
-              />
+          <div className="space-y-3">
+            {joinedRecruits.map((item) => (
+              <Link key={item.id} href={`/recruit/${item.id}`} className="block bg-white p-4 rounded-xl border border-gray-100 shadow-sm active:scale-95 transition">
+                <p className="font-bold text-gray-800 line-clamp-1">{item.title}</p>
+                <div className="flex gap-3 text-xs text-gray-500 mt-1">
+                  <span>📅 {item.date}</span>
+                  <span>📍 {item.location}</span>
+                </div>
+              </Link>
             ))}
           </div>
         )}
-      </div>
+      </section>
+
+      {/* 내가 만든 모집 글 */}
+      <section>
+        <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+          📝 내가 만든 모집 <span className="text-gray-500">{myRecruits.length}</span>
+        </h3>
+        {myRecruits.length === 0 ? (
+          <div className="text-gray-400 text-sm bg-white p-4 rounded-xl border border-dashed text-center">
+            작성한 모집 글이 없어요.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {myRecruits.map((item) => (
+              <Link key={item.id} href={`/recruit/${item.id}`} className="block bg-gray-100 p-4 rounded-xl active:scale-95 transition">
+                <p className="font-bold text-gray-700 line-clamp-1">{item.title}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {item.date} • {item.currentPeople}/{item.maxPeople}명
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

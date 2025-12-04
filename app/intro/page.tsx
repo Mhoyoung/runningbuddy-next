@@ -2,22 +2,22 @@ export default function IntroPage() {
   return (
     <section className="pt-6 pb-24 px-6 bg-white min-h-screen text-gray-800">
 
-      {/* ✅ 메인 타이틀 */}
+      {/* 메인 타이틀 */}
       <h1 className="text-3xl font-extrabold text-center leading-snug">
         함께 달리고<br />함께 성장하는
         <span className="block text-primary mt-2">RunningBuddy</span>
       </h1>
 
-      {/* ✅ 서브 설명 */}
+      {/* 서브 설명 */}
       <p className="text-center text-gray-600 mt-4 leading-relaxed">
         러닝을 사랑하는 사람들을 위한 커뮤니티 플랫폼<br />
         RunningBuddy를 소개합니다.
       </p>
 
-      {/* ✅ 구분선 */}
+      {/* 구분선 */}
       <div className="w-full h-[1px] bg-gray-200 my-10"></div>
 
-      {/* ✅ 러닝버디 설명 섹션 */}
+      {/* 러닝버디 설명 섹션 */}
       <h2 className="text-xl font-bold mb-4">RunningBuddy란?</h2>
       <p className="text-gray-700 leading-relaxed">
         RunningBuddy는 러너들이 서로 연결되고, 함께 달리고,
@@ -26,10 +26,10 @@ export default function IntroPage() {
         내 러닝 기록을 관리할 수 있습니다.
       </p>
 
-      {/* ✅ 구분선 */}
+      {/* 구분선 */}
       <div className="w-full h-[1px] bg-gray-200 my-10"></div>
 
-      {/* ✅ 핵심 가치 섹션 */}
+      {/* 핵심 가치 섹션 */}
       <h2 className="text-xl font-bold mb-6">RunningBuddy의 핵심 가치</h2>
 
       <div className="space-y-6">
@@ -62,10 +62,10 @@ export default function IntroPage() {
         </div>
       </div>
 
-      {/* ✅ 구분선 */}
+      {/* 구분선 */}
       <div className="w-full h-[1px] bg-gray-200 my-10"></div>
 
-      {/* ✅ 기능 블록 섹션 */}
+      {/* 기능 블록 섹션 */}
       <h2 className="text-xl font-bold mb-6">이용 가능한 주요 기능</h2>
 
       <div className="space-y-6">
@@ -90,7 +90,7 @@ export default function IntroPage() {
         </div>
       </div>
 
-      {/* ✅ 빈 공간 */}
+      {/* 빈 공간 */}
       <div className="h-10"></div>
     </section>
   );

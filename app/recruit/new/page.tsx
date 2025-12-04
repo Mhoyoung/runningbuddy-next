@@ -15,12 +15,11 @@ export default function RecruitNewPage() {
   const [form, setForm] = useState({
     title: "",
     content: "",
-    dateTime: "", // 날짜+시간 통합 관리
+    dateTime: "",
     location: "",
-    maxPeople: 4, // 기본 4명
+    maxPeople: 4,
   });
 
-  // 로그인 체크
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
@@ -46,7 +45,6 @@ export default function RecruitNewPage() {
     setLoading(true);
 
     try {
-      // 📅 날짜 형식 변환 (2025-11-05T19:00 -> 2025. 11. 05 / 19:00)
       const dateObj = new Date(form.dateTime);
       const dateStr = dateObj.toLocaleDateString("ko-KR"); 
       const timeStr = dateObj.toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -55,13 +53,13 @@ export default function RecruitNewPage() {
         uid: user.uid,
         title: form.title,
         content: form.content,
-        date: dateStr,     // 분리된 날짜
-        time: timeStr,     // 분리된 시간
+        date: dateStr,
+        time: timeStr,
         location: form.location,
         maxPeople: Number(form.maxPeople),
       });
 
-      alert("모집 글이 등록되었습니다! 🎉");
+      alert("모집 글이 등록되었습니다!");
       router.push("/recruit");
     } catch (error) {
       console.error(error);
@@ -76,7 +74,7 @@ export default function RecruitNewPage() {
   return (
     <section className="p-6 max-w-lg mx-auto bg-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">모집 글 작성 ✏️</h2>
+        <h2 className="text-xl font-bold">모집 글 작성</h2>
         <button onClick={() => router.back()} className="text-sm text-gray-500">취소</button>
       </div>
 
@@ -92,7 +90,7 @@ export default function RecruitNewPage() {
           />
         </label>
 
-        {/* 🔥 날짜/시간 선택기 */}
+        {/* 일시 & 인원 */}
         <div className="flex gap-3">
           <label className="block flex-1">
             <span className="font-semibold text-gray-700">일시</span>
@@ -118,6 +116,7 @@ export default function RecruitNewPage() {
           </label>
         </div>
 
+        {/* 장소  */}
         <label className="block">
           <span className="font-semibold text-gray-700">장소</span>
           <input

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { logIn } from "../../firebase/auth";
+import { logIn } from "@/firebase/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,12 +20,26 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await logIn(email, password);
+      await logIn(email.trim(), password);
+      
       alert("로그인 성공!");
       router.push("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("로그인 실패! 이메일 또는 비밀번호를 확인해주세요.");
+
+      if (
+        error.code === 'auth/invalid-credential' || 
+        error.code === 'auth/user-not-found' || 
+        error.code === 'auth/wrong-password'
+      ) {
+        alert("이메일 또는 비밀번호가 일치하지 않습니다.");
+      } else if (error.code === 'auth/invalid-email') {
+        alert("이메일 형식이 올바르지 않습니다.");
+      } else if (error.code === 'auth/too-many-requests') {
+        alert("로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        alert("로그인 실패: " + error.message);
+      }
     }
 
     setLoading(false);
@@ -59,7 +73,7 @@ export default function LoginPage() {
         />
       </label>
 
-      {/* ✅ 로그인 버튼 (흰 배경 + 검정 글씨로 통일) */}
+      {/* 로그인 버튼 (흰 배경 + 검정 글씨로 통일) */}
       <button
         className="
           w-full 

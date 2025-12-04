@@ -1,40 +1,48 @@
-// app/news/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import NewsCard from "@/components/NewsCard";
-import { getNewsList, NewsItem } from "@/firebase/news";
+import { getNewsList } from "@/firebase/news";
 import Link from "next/link";
+import { FaChevronRight } from "react-icons/fa";
 
 export default function NewsPage() {
-  const [list, setList] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<any[]>([]);
 
   useEffect(() => {
-    (async () => {
+    async function load() {
       const data = await getNewsList();
-      setList(data);
-    })();
+      setNews(data);
+    }
+    load();
   }, []);
 
   return (
-    <section className="p-4 pb-24 bg-gray-50 min-h-screen">
-      <h2 className="text-xl font-bold mb-6">소식</h2>
+    <div className="p-4 pb-24 min-h-screen bg-gray-50">
+      <h1 className="text-2xl font-bold mb-6 px-1">소식 / 공지 📢</h1>
 
-      <div className="space-y-4">
-        {list.map((item) => (
-          <NewsCard key={item.id} item={item} />
+      <div className="space-y-3">
+        {news.map((item) => (
+          <Link
+            key={item.id}
+            href={`/news/${item.id}`}
+            className="block bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition active:scale-[0.99]"
+          >
+            <div className="flex justify-between items-center gap-4">
+              <div>
+                <h3 className="font-bold text-gray-800 text-lg mb-1 leading-snug">
+                  {item.title}
+                </h3>
+                <div className="text-sm text-gray-500 flex items-center gap-2">
+                  <span className="font-medium text-blue-600">{item.source}</span>
+                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                  <span>{item.date}</span>
+                </div>
+              </div>
+              <FaChevronRight className="text-gray-300 shrink-0" size={14} />
+            </div>
+          </Link>
         ))}
       </div>
-
-      {/* 작성 버튼: 흰 배경 + 검정 글씨 */}
-      <Link
-        href="/news/new"
-        className="fixed bottom-6 right-6 rounded-full shadow-lg active:scale-95 transition
-                   bg-white text-black border border-gray-300 w-14 h-14 flex items-center justify-center"
-        aria-label="소식 작성"
-      >
-        <span className="text-3xl leading-none">+</span>
-      </Link>
-    </section>
+    </div>
   );
 }

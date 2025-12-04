@@ -32,11 +32,11 @@ export default function SignupPage() {
     try {
       setLoading(true);
 
-      // ✅ Firebase Auth 회원가입
+      // Firebase Auth 회원가입
       const userCredential = await signUp(form.email, form.password);
       const user = userCredential.user;
 
-      // ✅ Firestore users 컬렉션에 저장
+      // Firestore users 컬렉션에 저장
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         nickname: form.nickname,
@@ -44,7 +44,7 @@ export default function SignupPage() {
         createdAt: new Date(),
       });
 
-      // ✅ 성공 모달 표시
+      // 성공 모달 표시
       setSuccessModal(true);
 
     } catch (err: any) {
@@ -114,7 +114,7 @@ export default function SignupPage() {
           />
         </div>
 
-        {/* ✅ 가입하기 버튼 */}
+        {/* 가입하기 버튼 */}
         <button
           onClick={submit}
           disabled={loading}
@@ -131,7 +131,7 @@ export default function SignupPage() {
         </Link>
       </p>
 
-      {/* ✅ 가입 성공 모달 */}
+      {/* 가입 성공 모달 */}
       {successModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white w-72 p-6 rounded-xl text-center shadow-lg">
