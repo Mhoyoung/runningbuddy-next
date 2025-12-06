@@ -12,7 +12,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
-import ReviewCard from "@/components/ReviewCard";
+  import ReviewCard from "@/components/ReviewCard";
 import Skeleton from "@/components/Skeleton";
 import { useInView } from "react-intersection-observer";
 import FloatingButton from "@/components/FloatingButton"; 
