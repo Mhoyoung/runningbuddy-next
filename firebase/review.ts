@@ -14,7 +14,8 @@ import {
   serverTimestamp,
   getDoc,
   deleteDoc,
-  limit
+  limit,
+  where
 } from "firebase/firestore";
 // 이미지 업로드를 위해 Storage 관련 함수 추가
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -148,4 +149,18 @@ export async function addReview(userId: string, text: string, file: File) {
     likedBy: [],
     createdAt: serverTimestamp(),
   });
+}
+
+// [마이페이지] 내가 쓴 리뷰 가져오기
+export async function getMyReviews(userId: string) {
+  const q = query(
+    collection(db, "reviews"),
+    where("userId", "==", userId), // 작성자가 나인 것만
+    orderBy("createdAt", "desc")
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 }
