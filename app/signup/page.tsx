@@ -30,11 +30,11 @@ export default function SignupPage() {
     try {
       setLoading(true);
 
-      // Firebase Auth 회원가입
+      // 1. Firebase Auth 회원가입 (auth.ts에서 인증 메일 발송됨)
       const userCredential = await signUp(form.email, form.password);
       const user = userCredential.user;
 
-      // Firestore에 닉네임 저장
+      // 2. Firestore에 닉네임 저장
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         nickname: form.nickname,
@@ -43,6 +43,7 @@ export default function SignupPage() {
         createdAt: new Date(),
       });
 
+      // 3. 성공 모달 표시
       setSuccessModal(true);
 
     } catch (err: any) {
@@ -118,7 +119,7 @@ export default function SignupPage() {
           />
         </div>
 
-        {/* 🔥 [수정됨] 가입하기 버튼 (검정 배경 + 흰색 글씨) */}
+        {/* 가입하기 버튼 */}
         <button
           onClick={submit}
           disabled={loading}
@@ -135,13 +136,16 @@ export default function SignupPage() {
         </Link>
       </p>
 
-      {/* 가입 성공 모달 */}
+      {/* ✅ [수정됨] 인증 안내 모달 */}
       {successModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white w-80 p-8 rounded-2xl text-center shadow-2xl">
-            <div className="text-4xl mb-4">🎉</div>
-            <p className="text-xl font-bold mb-2">가입 완료!</p>
-            <p className="text-gray-500 mb-6 text-sm">이제 러닝버디와 함께 달려볼까요?</p>
+            <div className="text-4xl mb-4">📧</div>
+            <p className="text-xl font-bold mb-2">인증 메일 발송!</p>
+            <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+              입력하신 이메일로 인증 링크를 보냈습니다.<br/>
+              <span className="text-blue-600 font-bold">메일함에서 링크를 클릭</span>해주세요!
+            </p>
             <button
               className="w-full py-3 bg-black text-white rounded-xl font-bold shadow-md hover:bg-gray-800 transition"
               onClick={() => (window.location.href = "/login")}

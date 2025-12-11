@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  sendEmailVerification,
 } from "firebase/auth";
 import { 
   doc, 
@@ -16,8 +17,13 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // 회원가입
-export function signUp(email: string, password: string) {
-  return createUserWithEmailAndPassword(auth, email, password);
+export async function signUp(email: string, password: string) {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  
+  // 가입 성공 직후, 인증 메일 발송!
+  await sendEmailVerification(userCredential.user);
+  
+  return userCredential;
 }
 
 // 로그인
